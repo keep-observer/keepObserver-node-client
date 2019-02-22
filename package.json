@@ -1,0 +1,41 @@
+{
+  "name": "keep-observers-node",
+  "version": "1.0.0",
+  "description": "keep-observers-node.js",
+  "main": "index.js",
+  "scripts": {
+    "dev": " node index.js",
+    "debug": " node --inspect-brk index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "wangkai1995",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "formidable": "^1.2.1",
+    "md5": "^2.2.1",
+    "mongodb": "^3.1.7",
+    "multer": "^1.3.1",
+    "node-schedule": "^1.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keep-observer/keepObserver-node.git"
+  },
+  "keywords": [
+    "web",
+    "js-error",
+    "javascript",
+    "network",
+    "vue",
+    "console",
+    "log",
+    "ajax"
+  ],
+  "bugs": {
+    "url": "https://github.com/keep-observer/keepObserver-node/issues"
+  },
+  "homepage": "https://github.com/keep-observer/keepObserver-node#readme"
+}
