@@ -245,6 +245,33 @@ const hanleLocation = function(locationURL, reportType, tableName) {
     return hostLink
 }
 
+
+const getLoactionQueryObj = function(locationURL){
+    if (!isString(locationURL) || locationURL === null) {
+        return ''
+    }
+    var tempUrl = locationURL.replace(/https?:\/\//,'');
+    var tempObj = {};
+
+    if(tempUrl.indexOf('?') > -1){
+        var initDateArr = tempUrl.split('?');
+        tempUrl = initDateArr[0];
+        var tempArr = initDateArr[1].split('&');
+        tempArr.forEach(item => {
+            var arr = item.split('=');
+            console.log('=====',arr)
+            tempObj[arr[0]] = arr[1]
+        })
+    }
+    return {
+        location: tempUrl,
+        enterFrom: tempObj 
+    }
+}
+
+
+
+
 function numberFix(number, gte, fix, char) {
     if (number >= gte) {
         return number
@@ -312,6 +339,7 @@ module.exports = {
     handleErrorLog,
     codeTransMap,
     hanleLocation,
+    getLoactionQueryObj,
     numberFix,
     consoleUpdating,
     validateParams

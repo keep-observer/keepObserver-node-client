@@ -6,8 +6,8 @@ const {
     ajaxFailResult
 } = require('../tool/index.js');
 
-
-const filterAnlysisRecord = function(res, params) {
+//上报埋点数据过滤修改操作
+const filterWebObserverRecord = function(res, params) {
     var {
         id,
         useActives,
@@ -130,7 +130,7 @@ const filterAnlysisRecord = function(res, params) {
                 id
             })
             insertObj.data.useActives = newUseActives
-            sqlModel.insertOne({
+            sqlModel.inserStatisticsRecord({
                 tableName: tableName,
                 data: insertObj
             }).then(function(result) {
@@ -214,6 +214,100 @@ function updateStatisticsData(project, location, validUseActivesKeys, isFirstVie
         }
     })
 }
+
+
+// 获取页面配置时过滤修改操作
+const webPageviewFilterRecord = function(res, params,callback) {
+    var tableName = 'Project_analysis_report_point_data'
+    var { deviceID } = params.data;
+    var { location, reportTime, enterFrom, areaInfo} = params;
+
+    //判断id是否重复， 重复则不写入数据库
+    var query = {
+        id: deviceID,
+        location: location
+    };
+    sqlModel.findOne({
+        tableName: tableName,
+        filter: query
+    }).then(function(result) {
+        if(result){
+            // 有数据就初始化当前用户的数据记录
+            console.log('=====查到有数据，更新数据=====');
+            var data = result.data;
+            // 时间比较
+            var oldReportTime = +result.reportTime;
+            var minTime = new Date(tool.dateFormat(oldReportTime,'yyyy-MM-dd 00:00:00')).getTime();
+            var maxTime = new Date(tool.dateFormat(oldReportTime,'yyyy-MM-dd 23:59:59')).getTime();
+            if(reportTime >= minTime && reportTime <= maxTime){
+                //同一天
+                data.repeatCountAll++;
+                data.repeatCount++;
+            }else{
+                //之后天
+                data.repeatCountAll++;
+                data.repeatCount = 1;
+            }
+            var oldIP = result.areaInfo.newIp;
+            //更新存储数据
+            sqlModel.updateOne({
+                tableName: tableName,
+                filter: query,
+                data: {
+                    $set: {
+                        reportTime: reportTime,
+                        data: data,
+                        enterFrom: enterFrom,
+                        'areaInfo.newIp': areaInfo.newIp,
+                        'areaInfo.oldIp': oldIP
+                    }
+                }
+            }).then(function(result) {
+                console.log('更新统计数据表成功!');
+                callback()
+            }).catch(function(err) {
+                console.log('更新统计数据表失败!');
+                console.log('失败原因：' + err);
+                ajaxFailResult(res, 'report fail. error info:' + err)
+            })
+        }else{
+            // 没有数据就插入
+            var insertObj = params;
+            insertObj.location = location;
+            insertObj.data = {
+                repeatCountAll: 1,
+                repeatCount: 1,
+                useActives: {}
+            };
+            insertObj.id = deviceID;
+
+            sqlModel.insertOne({
+                tableName: tableName,
+                data: insertObj
+            }).then(function(result) {
+                if (result) {
+                    callback()
+                }
+            }).catch(function(err) {
+                ajaxFailResult(res, 'record fail error info:' + err)
+            })
+        }
+    })
+
+
+    
+}
+
+
+function updateWebPageviewStatisticsData(params,isFirstView){
+
+}
+
+
+
+
+
 module.exports = {
-    filterAnlysisRecord
+    filterWebObserverRecord,
+    webPageviewFilterRecord
 }

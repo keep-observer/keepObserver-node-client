@@ -17,6 +17,11 @@ const {
     filterAnlysisRecord
 } = require('./h5Analysis');
 
+const {
+    filterWebObserverRecord,
+    webPageviewFilterRecord
+} = require('./webObserverAnalysis');
+
 const tool = require('../../tool/index');
 
 const v1_ModelSql = require('../../sql/sqlModel.js');
@@ -84,9 +89,22 @@ router.use('/report', (req, res) => {
             return false;
         }
 
-        filterAnlysisRecord(res, params);
-        return false;
+        switch (reportType) {
+
+            case 'simpleH5': {
+                filterAnlysisRecord(res, params);
+                return false;
+            }
+
+            case 'webObserver': {
+                
+                return false;
+            }
+        }  
     }
+
+
+
 
     //监控&性能分析
     var tableName = false;
@@ -123,24 +141,32 @@ router.use('/report', (req, res) => {
 //查询埋点配置
 router.use('/getPointConfig', (req, res) => {
     var params = req.body;
-    console.log('url:',params);
+    params.areaInfo = {
+        newIp: req.ip,
+        oldIp: null,
+    };
 
     //如果出现错误
-    if (!params || !params.url) {
+    if (!params || !params.location) {
         ajaxFailResult(res, 'request params is undefined')
         return false;
     }
+    var { location, enterFrom} = tool.getLoactionQueryObj(params.location)
+    params.location = location;
+    params.enterFrom = enterFrom;
 
     var filter = {
-        url: params.url
+        url: location
     }
     v1_ModelSql.findOne({
         tableName: 'Buried_point_config',
         filter: filter
     }).then((result) => {
-        //返回成功
-        ajaxResult(res, result ? result.nodeList : [], "get pages config Success");
-        return false;
+        webPageviewFilterRecord(res, params,function(){
+            //返回成功
+            ajaxResult(res, result ? result.nodeList : [], "get pages config Success");
+            return false;
+        });
     }, (err) => {
         ajaxFailResult(res, 'config fail error info:' + err)
         return false;
@@ -157,12 +183,6 @@ module.exports = router;
 
 
 
-// console.log('客户端请求的IP地址：', getClientIp(req).replace('::ffff:',''))
-// getIpInfo(getClientIp(req).replace('::ffff:',''), function(err, msg) {
-//     debugger
-    
-// })
-
 // function getClientIp(req) {
 //       return req.headers['x-forwarded-for'] ||
 //       req.connection.remoteAddress ||
@@ -170,34 +190,4 @@ module.exports = router;
 //       req.connection.socket.remoteAddress;
 // };
 
- 
-// /**
-//  * 根据 ip 获取获取地址信息
-//  */
-// function getIpInfo(ip, cb) {
-//     var sina_server = 'http://ip.taobao.com/service/getIpInfo.php?ip=';
-//     var url = sina_server + ip;
-//     http.get(url, function(res) {
-//         debugger
-//         var code = res.statusCode;
-//         if (code == 200) {
-//             res.on('data', function(data) {
-//                 console.log(333,JSON.parse(data))
-//                 try {
-//                     cb(null, JSON.parse(data));
-//                 } catch (err) {
-//                     cb(err);
-//                 }
-//             });
-//         } else {
-//             debugger
-//             console.log(res)
-//             cb({ code: code });
-//         }
-//     }).on('error', function(e) { 
-//         debugger
-//         console.log(e)
-//         cb(e); 
-//     });
-// };
  
