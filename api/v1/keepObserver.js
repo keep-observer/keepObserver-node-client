@@ -26,17 +26,11 @@ const tool = require('../../tool/index');
 
 const v1_ModelSql = require('../../sql/sqlModel.js');
 
-const {
-    reserveOrigins
-} = require('../../config')
-
 
 
 //用户上报数据接口
 router.use('/report', (req, res) => {
     var params = req.body;
-    // console.log(params)
-    // console.log('\n')
     //如果出现错误
     if (!params) {
         ajaxFailResult(res, 'request params is undefined')
@@ -58,53 +52,35 @@ router.use('/report', (req, res) => {
 
     //统计分析
     if (isAnalyse) {
-
-        const hostname = req.hostname;
-        let skipFlag = true;
-        reserveOrigins.forEach(origin => {
-            hostname.indexOf(origin) > -1 && (skipFlag = false);
-        })
-        if (skipFlag) {
-            ajaxFailResult(res, 'report has been filtered!');
-            return;
-        }
-
-        var {
-            data
-        } = params
-        if (!tool.isNumber(data.repeatCount) || !tool.isNumber(data.repeatCountAll)) {
-            ajaxFailResult(res, 'repeatCount or repeatCountAll is not a number')
-            return false;
-        }
-        for (var key in data.useActives) {
-            if (!tool.isNumber(data.useActives[key].activeCount) || !tool.isNumber(data.useActives[key].activeCountAll)) {
-                ajaxFailResult(res, 'activeCount or activeCount is not a number')
-                return false;
-            }
-        }
         //判断访问域名是不是localhost
         var host = req.headers.host
         var location = params.location
         if (host.indexOf('localhost') < 0 && location.indexOf('localhost') > -1) {
             return false;
         }
-
         switch (reportType) {
-
             case 'simpleH5': {
-                filterAnlysisRecord(res, params);
+                filterAnlysisRecord(req, res, params);
                 return false;
             }
-
             case 'webObserver': {
-                
+                //根据请求的data的type类型确定：  load:页面加载请求配置页面;     catch：数据上传捕获
+                var { data } = params;
+                if(data.type === 'load'){
+                    webPageviewFilterRecord(req,res,params)
+                }else if(data.type === 'catch'){
+                    filterWebObserverRecord(req,res,params)
+                }else{
+                    ajaxFailResult(res, 'request data type is Error!')
+                }
+                return false;
+            }
+            default: {
+                ajaxFailResult(res, 'request reportType type is Error!')
                 return false;
             }
         }  
     }
-
-
-
 
     //监控&性能分析
     var tableName = false;
@@ -135,59 +111,4 @@ router.use('/report', (req, res) => {
 });
 
 
-
-
-
-//查询埋点配置
-router.use('/getPointConfig', (req, res) => {
-    var params = req.body;
-    params.areaInfo = {
-        newIp: req.ip,
-        oldIp: null,
-    };
-
-    //如果出现错误
-    if (!params || !params.location) {
-        ajaxFailResult(res, 'request params is undefined')
-        return false;
-    }
-    var { location, enterFrom} = tool.getLoactionQueryObj(params.location)
-    params.location = location;
-    params.enterFrom = enterFrom;
-
-    var filter = {
-        url: location
-    }
-    v1_ModelSql.findOne({
-        tableName: 'Buried_point_config',
-        filter: filter
-    }).then((result) => {
-        webPageviewFilterRecord(res, params,function(){
-            //返回成功
-            ajaxResult(res, result ? result.nodeList : [], "get pages config Success");
-            return false;
-        });
-    }, (err) => {
-        ajaxFailResult(res, 'config fail error info:' + err)
-        return false;
-    })
-})
-
 module.exports = router;
-
-
-
-
-
-
-
-
-
-// function getClientIp(req) {
-//       return req.headers['x-forwarded-for'] ||
-//       req.connection.remoteAddress ||
-//       req.socket.remoteAddress ||
-//       req.connection.socket.remoteAddress;
-// };
-
- 

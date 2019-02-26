@@ -1,13 +1,40 @@
 const tool = require('../../tool/index');
 const sqlModel = require('../../sql/sqlModel');
-// const statisticModel = require('../../sql/statisticData.js')
 const {
     ajaxResult,
     ajaxFailResult
 } = require('../tool/index.js');
 
+const {
+    reserveOrigins
+} = require('../../config')
 
-const filterAnlysisRecord = function(res, params) {
+
+
+const filterAnlysisRecord = function(req, res, params) {
+
+
+    const hostname = req.hostname;
+    let skipFlag = true;
+    reserveOrigins.forEach(origin => {
+        hostname.indexOf(origin) > -1 && (skipFlag = false);
+    })
+    if (skipFlag) {
+        ajaxFailResult(res, 'report has been filtered!');
+        return;
+    }
+    var { data } = params
+    if (!tool.isNumber(data.repeatCount) || !tool.isNumber(data.repeatCountAll)) {
+        ajaxFailResult(res, 'repeatCount or repeatCountAll is not a number')
+        return false;
+    }
+    for (var key in data.useActives) {
+        if (!tool.isNumber(data.useActives[key].activeCount) || !tool.isNumber(data.useActives[key].activeCountAll)) {
+            ajaxFailResult(res, 'activeCount or activeCount is not a number')
+            return false;
+        }
+    }
+
     var {
         id,
         useActives,
@@ -19,14 +46,13 @@ const filterAnlysisRecord = function(res, params) {
         project,
         location
     } = params;
-    // console.log('params', params)
+
     var tableName = 'Project_analysis_report_data';
 
     var channel = location.match(/(?<=\?)(.*)/) ? location.match(/(?<=\?)(.*)/)[0] : '';
     if (reportType.indexOf('H5') > -1) {
         channel = location.match(/^.*\?(.*?)(?:#.*)?$/) ? location.match(/^.*\?(.*?)(?:#.*)?$/)[1] : '';
     }
-
     const hostLink = tool.hanleLocation(location, reportType);
 
     //判断id是否重复， 重复则不写入数据库
