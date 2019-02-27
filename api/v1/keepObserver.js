@@ -63,7 +63,7 @@ router.use('/report', (req, res) => {
                 filterAnlysisRecord(req, res, params);
                 return false;
             }
-            case 'webObserver': {
+            case 'webSignObserver': {
                 //根据请求的data的type类型确定：  load:页面加载请求配置页面;     catch：数据上传捕获
                 var { data } = params;
                 if(data.type === 'load'){

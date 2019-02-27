@@ -11,10 +11,9 @@ const {
 
 //上报埋点操作数据
 const filterWebObserverRecord = function(req, res, params) {
+    
     var {
-        deviceID
-    } = params.data;
-    var {
+        deviceID,
         reportTime,
         reportType,
         project
@@ -207,8 +206,7 @@ const webPageviewFilterRecord = function(req, res,params) {
     }).then((config) => {
         
         var tableName = 'Project_analysis_report_point_data';
-        var { deviceID } = params.data;
-        var { location, reportTime, enterFrom, areaInfo} = params;
+        var { deviceID, location, reportTime, enterFrom, areaInfo} = params;
 
         //判断id是否重复， 重复则不写入数据库
         var query = {
