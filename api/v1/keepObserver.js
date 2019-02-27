@@ -27,7 +27,6 @@ const tool = require('../../tool/index');
 const v1_ModelSql = require('../../sql/sqlModel.js');
 
 
-
 //用户上报数据接口
 router.use('/report', (req, res) => {
     var params = req.body;
@@ -63,7 +62,7 @@ router.use('/report', (req, res) => {
                 filterAnlysisRecord(req, res, params);
                 return false;
             }
-            case 'WebSignAnalyse': {
+            case 'webSignAnalyse': {
                 //根据请求的data的type类型确定：  load:页面加载请求配置页面;     catch：数据上传捕获
                 var { data } = params;
                 if(data.type === 'load'){
