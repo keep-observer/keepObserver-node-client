@@ -1,20 +1,21 @@
-const tool = require('../../tool/index');
-const sqlModel = require('../../sql/sqlModel');
+const tool = require('../../../tool/index');
+const sqlModel = require('../../../sql/sqlModel');
 const {
     ajaxResult,
     ajaxFailResult
-} = require('../tool/index.js');
+} = require('../../tool/index.js');
 
 const {
     reserveOrigins
-} = require('../../config')
+} = require('../../../config')
 
 
 
-const filterAnlysisRecord = function(req, res, params) {
+const simpleH5Analysis = function(req, res) {
 
-
-    const hostname = req.hostname;
+    var params = req.body;
+    var hostname = req.hostname;
+    
     let skipFlag = true;
     reserveOrigins.forEach(origin => {
         hostname.indexOf(origin) > -1 && (skipFlag = false);
@@ -240,6 +241,6 @@ function updateStatisticsData(project, location, validUseActivesKeys, isFirstVie
         }
     })
 }
-module.exports = {
-    filterAnlysisRecord
-}
+
+
+module.exports = simpleH5Analysis

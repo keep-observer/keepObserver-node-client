@@ -1,13 +1,13 @@
-const tool = require('../../tool/index.js');
-const v1_ModelSql = require('../../sql/sqlModel.js');
 
 
+const tool = require('../../../tool/index.js');
+const ModelSql = require('../../../sql/sqlModel.js');
 
 
 /*
-	记录统计数据
+	更新监控和性能统计记录数据表 Admin_statistics_data
  */
-const statisticsRecord = function(params) {
+const updateStatisticsRecord = function(params) {
     var recordData = {};
     //记录统计时间
     var reportTime = new Date();
@@ -21,12 +21,9 @@ const statisticsRecord = function(params) {
         return false;
     }
     var {
-        isMonitorError,
-        isPerformance,
         reportType,
         type
     } = params;
-    type = type ? type : 'unknow';
     //统计参数
     recordData.reportTime = reportTime;
     recordData.project = params.project;
@@ -40,7 +37,7 @@ const statisticsRecord = function(params) {
         }]
     };
     //查询更新
-    v1_ModelSql.findOne({
+    ModelSql.findOne({
         tableName: tableName,
         filter: filter
     }).then(function(result) {
@@ -57,7 +54,7 @@ const statisticsRecord = function(params) {
                 recordData.count[type][reportType] = 1;
             }
             //更新统计数据
-            v1_ModelSql.updateOne({
+            ModelSql.updateOne({
                 tableName: tableName,
                 filter: filter,
                 data: {
@@ -73,7 +70,7 @@ const statisticsRecord = function(params) {
             recordData.count[type] = {};
             recordData.count[type][reportType] = 1;
             //不存在插入一条新数据
-            v1_ModelSql.insertOne({
+            ModelSql.insertOne({
                 tableName: tableName,
                 data: recordData
             }).then(function() {}, function(err) {
@@ -87,6 +84,4 @@ const statisticsRecord = function(params) {
 
 
 
-module.exports = {
-    statisticsRecord
-}
+module.exports = updateStatisticsRecord
